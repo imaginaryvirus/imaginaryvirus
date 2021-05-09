@@ -8,6 +8,7 @@
 
 “回文串”是一个正读和反读都一样的字符串，比如“level”或者“noon”等等就是回文串。花花非常喜欢这种拥有对称美的回文串，生日的时候她得到两个礼物分别是字符串A和字符串B。现在她非常好奇有没有办法将字符串B插入字符串A使产生的字符串是一个回文串。你接受花花的请求，帮助她寻找有多少种插入办法可以使新串是一个回文串。如果字符串B插入的位置不同就考虑为不一样的办法。
 
+```
 例如：
 A = “aba”，B = “b”。这里有4种把B插入A的办法：
 
@@ -19,6 +20,9 @@ A = “aba”，B = “b”。这里有4种把B插入A的办法：
 
 在第二个字母'a'之后 "abab" 不是回文
 所以满足条件的答案为2
+```
+
+
 
 ```python
 def solution(A, B):
@@ -65,7 +69,7 @@ Leetcode132[分割回文串 II](https://leetcode-cn.com/problems/palindrome-part
 
 转移方程：
 
-![img](file:///C:\Users\ainer\AppData\Local\Temp\ksohtml14560\wps3.jpg)
+![img](assets/wps3.jpg)
 
 ```python
 def solution(s):
@@ -121,7 +125,7 @@ Leetcode[1278. 分割回文串 III](https://leetcode-cn.com/problems/palindrome-
 
 枚举将s[m+1, i]作为一个回文子串，前面s[0, m]划分为j-1个子串。
 
-![img](file:///C:\Users\ainer\AppData\Local\Temp\ksohtml14560\wps6.jpg)
+![img](assets/wps6.jpg)
 
 初始化：
 
@@ -220,10 +224,12 @@ def solution(A, B):
 
 字符串有三种编辑操作:插入一个字符、删除一个字符或者替换一个字符。 给定两个字符串，编写一个函数判定它们是否只需要一次(或者零次)编辑。
 
+```
 输入: 
 	first = "pale"
 	second = "ple"
 输出: True
+```
 
 因为最多只能做一次编辑，所以两个字符串的长度之差大于1时无法通过一次编辑使之相同。
 
@@ -271,6 +277,44 @@ Leetcode[72. 编辑距离](https://leetcode-cn.com/problems/edit-distance/)
 
 替换一个字符，删除word1的一个字符，删除word2的一个字符。
 
+状态：f[i] [j]存储w1[0, i]与w2[0, j]变成相同字符串的最小编辑次数。
+
+转移方程：
+
+1. 替换w1[i] or w2[j], 使w1[i]=w2[j] ，f[i-1] [j-1]+1
+
+2. 删除w1[i], 使w1[0, i-1]与w2[0, j]变成相同子符串 ，f[i-1] [j]+1
+
+3. 删除w2[j], 使w1[0, i]与w2[0, j-1]变成相同子符串 ， f[i] [j-1]+1
+
+f[i] [j] = min(f[i-1] [j-1]+1, f[i-1] [j]+1,  f[i] [j-1]+1)
+
+```
+def solution(word1, word2):
+    word1 = " " + word1
+    word2 = " " + word2
+    n = len(word1)
+    m = len(word2)
+    dp = [[float('inf')]*m for _ in range(n)] # 使字符串相同的最小编辑次数
+    for i in range(n):
+        # word1[0, i]与" "的最小编辑次数为i
+        dp[i][0] = i
+    for j in range(m):
+        dp[0][j] = j
+    for i in range(1, n):
+        for j in range(1, m):
+            if word1[i] == word2[j]:
+                # 不用编辑
+                dp[i][j] = dp[i-1][j-1]
+            else:
+                # 替换操作:dp[i-1][j-1]+1
+                # 删除操作：
+                #    删除word1的字符i, dp[i-1][j]+1
+                #    删除word2的字符j, dp[i][j-1]+1
+                dp[i][j] = min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1])+1
+    return dp[-1][-1]
+```
+
 
 
 ## 字符串匹配问题
@@ -303,11 +347,11 @@ pattern: "bc" -> " bc"
 
 1. 要求在string中匹配子串时
 
-![img](file:///C:\Users\ainer\AppData\Local\Temp\ksohtml14560\wps9.jpg)
+![img](assets/wps9.jpg)
 
 2. 要求在string中匹配子序列时
 
-![img](file:///C:\Users\ainer\AppData\Local\Temp\ksohtml14560\wps11.jpg)
+![img](assets/wps11.jpg)
 
 ​		因为子序列不要求string匹配的对象连续，所以可以用s[i-1]匹配p[j]。三元表达式对应string[i]与pattern[j]匹		配的情况
 
@@ -357,5 +401,48 @@ class KMP():
         return None
 ```
 
+Leetcode[115. 不同的子序列](https://leetcode-cn.com/problems/distinct-subsequences/)
 
+给定一个字符串 s 和一个字符串 t ，计算在 s 的子序列中 t 出现的个数。
+
+字符串的一个 子序列 是指，通过删除一些（也可以不删除）字符且不干扰剩余字符相对位置所组成的新字符串。（例如，"ACE" 是 "ABCDE" 的一个子序列，而 "AEC" 不是）
+
+题目数据保证答案符合 32 位带符号整数范围。
+
+```
+输入：s = "rabbbit", t = "rabbit"
+输出：3
+解释：
+如下图所示, 有 3 种可以从 s 中得到 "rabbit" 的方案。
+(上箭头符号 ^ 表示选取的字母)
+rabbbit
+^^^^ ^^
+rabbbit
+^^ ^^^^
+rabbbit
+^^^ ^^^
+```
+
+一道计数的问题，dp[i][j]存储的是s[0, i]与t[0, j]的匹配方案数。
+
+同样的在s，t的开头加上空格，初始化dp[i] [0]=1。
+
+```python
+def solution(s, t):
+	s = " "+s
+    t = " "+t
+    m = len(t)
+    n = len(s)
+    dp = [[0]*m for _ in range(n)]
+    for i in range(n):
+        dp[i][0] = 1
+    # 因为t, s加了空格所以t[0]与s的任意位置i匹配都是1
+    # dp[i][j] s[:i+1]与t[:j+1]的匹配数
+    for i in range(1, n):  # 跳过空格
+        for j in range(1, m):
+            dp[i][j] = dp[i-1][j] + (0 if s[i] != t[j] else dp[i-1][j-1])
+            # dp[i-1][j]不用s[i]的方案数
+            # 0 if s[i] != t[j] else dp[i-1][j-1] 使用s[i]的方案数
+    return dp[-1][-1]  # 返回s末尾与t末尾的匹配的方案数
+```
 
