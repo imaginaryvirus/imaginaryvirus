@@ -270,10 +270,8 @@ class DecisionTree():
         # 初始化根节点样本集
         self.root.samples = np.array(list(range(len(X))))
         out_labels = np.zeros((X.shape[0], 1))
-        n = 0
         while queue:
             cur_node = queue.pop(0)
-            n += 1
             if cur_node.leaf is None:  # 非叶子节点
                 feature = cur_node.feature
                 split_val = cur_node.split_val
