@@ -164,6 +164,46 @@ def solution(s, k):
     return min_cost[len(s)-1][k]
 ```
 
+[1745. 回文串分割 IV](https://leetcode-cn.com/problems/palindrome-partitioning-iv/)
+
+给你一个字符串 s ，如果可以将它分割成三个 非空 回文子字符串，那么返回 true ，否则返回 false 。
+
+当一个字符串正着读和反着读是一模一样的，就称其为 回文字符串 。
+
+同样用g[i] [j]表示s[i, j]是否是回文子串。
+
+因为只求分解为3个回文串，分割位点只有两个l和r。
+
+枚举两个分割位点分割时三个字符串的回文情况即可。
+
+```python
+def solution(s):
+	dp = [[False]*len(s) for _ in range(len(s))]
+    def check(s):
+        for r in range(len(s)):
+            for l in range(r+1):
+                if l == r:
+                    dp[l][r] = True
+                    continue
+                if s[l] == s[r]:
+                    if l+1 == r or (l+1 < r and dp[l+1][r-1]):
+                        dp[l][r] = True
+                    else:
+                        dp[l][r] = False
+                else:
+                    dp[l][r] = False
+        return
+    check(s)
+    n = len(s)
+    for l in range(0, n-2):
+        for r in range(l+1, n-1):
+            if dp[0][l] and dp[l+1][r] and dp[r+1][n-1]:
+                return True
+    return False
+```
+
+
+
 ## 字符串编辑问题
 
 MGJ5[回文串](https://www.nowcoder.com/practice/655a43d702cd466093022383c24a38bf?tpId=182&tqId=34631&rp=1&ru=%2Fta%2Fexam-all&qru=%2Fta%2Fexam-all%2Fquestion-ranking&tab=answerKey)
@@ -314,8 +354,6 @@ def solution(word1, word2):
                 dp[i][j] = min(dp[i-1][j-1], dp[i-1][j], dp[i][j-1])+1
     return dp[-1][-1]
 ```
-
-
 
 ## 字符串匹配问题
 
