@@ -95,7 +95,55 @@
     names.append(who)
     ```
 
-    
+17. 用defauldict处理内部状态中的缺失元素，不要用setdefault。
 
-17. 
+    如果你管理的字典可能需要添加任意的键，那么应该考虑能否用内置的collections模块的defaultdict实例来解决问题。如果这种键名比较随意的字典是别人传给你的，无法把它创建成defaultdict，那么应该考虑用get方法访问其中的键值。
+
+18. 利用`__missing__`构造依赖键的默认值
+
+    例如要写一个程序，在文件系统内管理社交网络账号中的图片。这个程序应该用字典把路径与相关的句柄关联起来，方便读取并写入图像。
+
+    ```
+    def open_picture(profile_path):
+    	try:
+    		return open(profile_path, 'a+b')
+    	except OSError:
+    		print(f'Failed to open path {profile_path}')
+    		raise
+    
+    
+    class Pictures(dict):
+    	def __missing__(self, key):
+    		value = open_picture(key)
+    		self[key] = value
+    		return value
+    ```
+
+    如果创建默认值需要较大的开销，或者可能抛出异常，那就不适合用dict类型的setdefault方法实现。
+
+    传给defaultdict的函数必须是**不需要参数的函数**，所以无法创建出需要依赖键名的默认值。
+
+    如果要构造的**默认值必须根据键名来确定**，那么可以定义自己的dict子类并实现`__missing__`方法。
+
+19. 不要把函数返回值拆分到三个以上的变量中。
+
+    函数可以把多个返回值合起来通过一个元组返回，以便利用unpacking机制拆分。
+
+    把返回的值拆分到四个或者四个以上的变量是很容易出错的，所以最好用一个轻便的类或者namedtuple实现。
+
+20. 遇到意外状况时应该抛出异常，不要返回None。
+
+    要用返回值None表示特殊情况是很容易出错的，因为这样的值在条件表达式里没办法与0和空白字符串之类的值区分开，这些值都相当与False。
+
+    用异常表示特殊的情况，而不要返回None，让调用函数的程序根据文档里写的异常情况作出处理。
+
+    通过类型注解可以明确禁止函数返回None，即使在特殊情况下，它也不能返回这个值。
+
+
+
+
+
+
+
+
 
