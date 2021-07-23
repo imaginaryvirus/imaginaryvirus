@@ -286,5 +286,189 @@ for i, data in enumerate(train_loader):
     writer.add_images("outputs", output, i)
     if i == 2:
         break
+writer.close()
+```
+
+##### 池化层
+
+```
+import torch
+from torch import nn
+from torch.nn import MaxPool2d
+from torchvision import transforms
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import datasets
+from torch.utils.data import DataLoader
+
+
+class MaxPoolDemo(nn.Module):
+    
+    def __init__(self):
+        super(MaxPoolDemo, self).__init__()
+        self.maxpool1 = MaxPool2d(kernel_size=3, ceil_mode=False)
+
+    def forward(self, x):
+        output = self.maxpool1(x)
+        return output
+
+demo = MaxPoolDemo()
+
+trans_totensor = transforms.ToTensor()
+train_set = datasets.CIFAR10(root="D:/pytorch/", transform=trans_totensor)
+train_loader = DataLoader(dataset=train_set, batch_size=64, shuffle=True,
+                          num_workers=0)
+
+writer = SummaryWriter('maxpoollog')
+for i, data in enumerate(train_loader):
+    imgs, labels = data
+    print(imgs.shape)
+    output = demo(imgs)
+    print(output.shape)
+    writer.add_images("inputs", imgs, i)
+    writer.add_images("outputs", output, i)
+    if i == 2:
+        break
+writer.close() 
+```
+
+##### 激活层
+
+```
+import torch
+from torch import nn
+
+
+input_data = torch.tensor([[1, -0.5],
+                           [-1, 3]])
+input_data = torch.reshape(input_data, (-1, 1, 2, 2))
+
+class ReLUDemo(nn.Module):
+    
+    def __init__(self):
+        super(ReLUDemo, self).__init__()
+        # inplace: 是否替换输入
+        self.relu = nn.ReLU()
+    
+    def forward(self, x):
+        return self.relu(x)
+
+demo = ReLUDemo()
+output = demo(input_data)
+print(output)
+```
+
+```
+import torch
+from torch import nn
+from torchvision import transforms
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import datasets
+from torch.utils.data import DataLoader
+
+trans_totensor = transforms.ToTensor()
+train_set = datasets.CIFAR10(root="D:/pytorch/", transform=trans_totensor)
+train_loader = DataLoader(dataset=train_set, batch_size=64, shuffle=True,
+                          num_workers=0)
+
+class SigmoidDemo(nn.Module):
+    
+    def __init__(self):
+        super(SigmoidDemo, self).__init__()
+        # inplace: 是否替换输入
+        self.sigmoid = nn.Sigmoid()
+    
+    def forward(self, x):
+        return self.sigmoid(x)
+
+demo = SigmoidDemo()
+writer = SummaryWriter("./sigmoidlog")
+for i, data in enumerate(train_loader):
+    imgs, labels = data
+    writer.add_images("inputs", imgs, i)
+    output = demo(imgs)
+    writer.add_images("outputs", output, i)
+    if i == 2:
+        break
+writer.close()
+```
+
+##### 线性层（全连接层）
+
+对输入做线性变换，<img src="assets/image-20210723194905643.png" alt="image-20210723194905643" style="zoom:50%;" />。只做线性变换。
+
+w, b以均匀分布初始化。
+
+##### 模型搭建
+
+![img](https://www.researchgate.net/profile/Yiren-Zhou-6/publication/312170477/figure/fig2/AS:448817725218817@1484017892180/Structure-of-CIFAR10-quick-model.png)
+
+以该模型为例。
+
+```
+import torch
+from torch import nn
+from torch.utils.tensorboard import SummaryWriter
+
+class CNN(nn.Module):
+    
+    def __init__(self):
+        # CNN model for CIFAR10
+        # input 3,32,32
+        super(CNN, self).__init__()
+        self.cov1 = nn.Conv2d(3, 32, 5, padding=2, stride=1)
+        self.maxpool1 = nn.MaxPool2d(kernel_size=2)
+        self.cov2 = nn.Conv2d(32, 32, 5, padding=2, stride=1)
+        self.maxpool2 = nn.MaxPool2d(kernel_size=2)
+        self.cov3 = nn.Conv2d(32, 64, 5, padding=2, stride=1)
+        self.maxpool3 = nn.MaxPool2d(kernel_size=2)
+        self.flatten = nn.Flatten()
+        # 64*4*4 = 1024
+        self.linear1 = nn.Linear(1024, 64)
+        self.linear2 = nn.Linear(64, 10)
+
+    def forward(self, x):
+        x = self.cov1(x)
+        x = self.maxpool1(x)
+        x = self.cov2(x)
+        x = self.maxpool2(x)
+        x = self.cov3(x)
+        x = self.maxpool3(x)
+        x = self.flatten(x)
+        x = self.linear1(x)
+        x = self.linear2(x)
+        return x
+```
+
+使用Sequential:
+
+```
+class CNN(nn.Module):
+    
+    def __init__(self):
+        # CNN model for CIFAR10
+        # input 3,32,32
+        super(CNN, self).__init__()
+        self.model = nn.Sequential(
+            nn.Conv2d(3, 32, 5, padding=2, stride=1),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(32, 32, 5, padding=2, stride=1),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(32, 64, 5, padding=2, stride=1),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Flatten(),
+            nn.Linear(1024, 64),
+            nn.Linear(64, 10)
+            )
+    def forward(self, x):
+        x = self.model(x)
+        return x
+demo = CNN()
+# 使用dummy数据检查网络的正确性
+input_data = torch.ones((64, 3, 32, 32))
+output = demo(input_data)
+print(output.shape)
+writer = SummaryWriter("logs_seq")
+writer.add_graph(demo, input_data)
+writer.close()
 ```
 
