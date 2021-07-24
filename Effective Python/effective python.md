@@ -139,11 +139,152 @@
 
     通过类型注解可以明确禁止函数返回None，即使在特殊情况下，它也不能返回这个值。
 
+21. 了解如何在闭包里面使用外围作用域中的变量。
 
+    例如要对列表元素排序，且某些元素有更高的优先级。可以这样实现：
 
+    ```
+    def sort_priority(values, group):
+    	def helper(x):
+    		if x in group:
+    			return (0, x)
+    		return (1, x)
+    	values.sort(key=helper)
+    ```
 
+    这个函数能实现此功能有如下原因：
 
+    python支持闭包（closure），让定义在大函数内的小函数也能引用大函数之中的变量。
 
+    函数在python内是头等对象（first-class object），所以可以直接引用它们、把它们赋值给变量，将它们当成参数传递给其他函数、在in表达式、if语句里面对它作比较，等等。闭包函数也是函数，所以可以传给sort函数作为参数。
 
+    python在判断两个序列是否相等时，先比较0号位置元素，如果相等再比较1号位置元素，以此类推。所以helper函数返回一个元组，并把关键指标写为首个元素。
 
+    在表达式中**引用某个变量**时，python解释器按照以下顺序，在各个作用域（scope）里面查找这个变量，以解析这次引用：
+
+    1. 当前函数作用域。
+    2. 外围作用域。
+    3. 包含当前代码的那个模块对应的作用域。也叫全局域（global scope）。
+    4. 内置作用域（built-in scope，也就是包含len,str等函数的作用域）。
+
+    如果这些作用域内都没有定义名称相符的变量程序抛出NameError异常。
+
+    对于**变量赋值**：
+
+    如果变量已经定义在当前作用域，那么直接把新值赋值。如果当前作用域内没有这个变量，那么及时外围有同名变量，python还是把这次赋值操作当成变量的定义来处理，且把包含赋值操作的函数当成新定义变量的作用域，**不会影响到外围作用域的同名变量的值**。防止函数中的局部变量污染外围模块。
+
+    使用nonlocal关键字可以把闭包内的数据赋值给闭包外的变量。除了特别简单的函数应该尽量少使用nonlocal语句。
+
+22. 用数量可变的位置参数给函数设计清晰的参数列表。
+
+    用def定义函数时，可以通过*args的写法让函数接受数量可变的位置参数。
+
+    调用函数时，可以在序列左边加上操作符`*`，把其中的**元素当成位置参数**传给*args所表示的这部分。
+
+    如果*操作符在生成器前，传递参数时，程序可能因为内存耗尽而崩溃。
+
+    给接受*args参数的函数添加新的位置参数，可能导致含义排查的bug。
+
+23. 用关键字参数来表示可选的行为。
+
+    函数的参数可以由位置指定，也可以由关键字的形式指定。
+
+    关键字可以让每个参数的作用更加明了，因为在调用函数时只按位置指定参数可能导致这些参数的含义不够明确。
+
+    应该通过带默认值的关键字参数来扩展函数的行为。
+
+    可选的关键字参数应该总是通过参数名来传递，而不是按位置传递。
+
+24. 用None和docstring来描述默认值会变的参数。
+
+    参数的默认值只会计算一次，也就是在系统把定义函数的模块加载进来的时候。所以如果默认值将来可能由调用方修改（例如[], {}）或者随着要调用时的情况变化（例如datatime.now()），那么程序会出现奇怪的效果。
+
+    ```
+    import json
+    def decode(data, default={}):
+    	try:
+    		return json.loads(data)
+    	except ValueError:
+    		return default
+    df1 = decode('bad data')
+    df1['stuff'] = 5
+    df2 = decode('also bad')
+    print(df1)
+    print(df2)
+    print(df1 is df2)
+    # True, df1和df2是同一份字典
+    ```
+
+    如果关键字参数的默认值属于这种会发生变化的值，那就应该写为None，并且在docstring内描述此时函数的默认行为。
+
+    ```
+    def decode(data, default={}):
+    	try:
+    		return json.loads(data)
+    	except ValueError:
+    		if default is None:
+    			default = {}
+    		return default
+    ```
+
+    默认值为None的关键字参数也可以添加类型注解。
+
+25. 用只能以关键字指定和只能以位置传入参数来设计清晰的参数列表。
+
+    Keyword-only argument是一种只能通过关键字指定而不能通过位置指定的参数。
+
+    ```
+    def self_division(number, divisor, *,
+    				  ignore_overflow=False,
+    				  ignore_zero_division=False):
+    	pass
+    ```
+
+    参数列表的*符号把参数分为两组，左边是位置参数，**右边是只能用关键字指定的参数**。
+
+    Position-only argument不允许通过关键字指定，要求必须按位置传递。在函数的参数列表中，位于**/符号的左侧**。(python3.8引入)
+
+    在参数列表中，位于/和*之间的参数，可以按位置指定，也可以用关键词指定。
+
+    ```
+    def self_division(number, divisor, /,
+    				  ndigits=10, *,
+    				  ignore_overflow=False,
+    				  ignore_zero_division=False):
+    	pass
+    ```
+
+26. 用functools.wraps来定义函数修饰器。
+
+    python中可以用修饰器（decorator）来封装某个函数，使得程序在执行这个函数之前与之后，分布运行某些代码。这意味着调用者传给函数的参数值，函数返回值，以及函数抛出的异常，都可以有修饰器访问并修改。
+
+    修饰器可能会让那些利用introspection机制运行的工具（例如调试器，help()函数，对象序列化器）产生奇怪的行为。
+
+    python内置的functools模块有个叫wraps的修饰器，可以帮助我们正确定义自己的修饰器，从而避开相关问题。
+
+    ```
+    from functools import wraps
+    
+    def trace(func):
+    	@wraps(func)
+    	def wrapper(*args, **kwargs):
+    		result = func(*args, **kwargs)
+    		print(f'{func.__name__}({args!r}, 					  {kwargs!r})->{result!r}')
+    		return result
+    	return wrapper
+    ```
+
+27. 用列表推导取代map与filter。
+
+    列表推导要比内置的map，filter函数清晰，并且可以很容易地跳过原列表的某些数据，假如用map实现，那么必须搭配filter。
+
+    字典与集合也可以通过推导来创建。
+
+28. 控制推导逻辑的子表达式不要超过两个。
+
+    推导的时候可以使用多层循环，每个循环可以带有多个条件。
+
+    如果多个if条件出现在同一层循环内，那么它们之间默认是and关系。
+
+    控制推导逻辑的子表达式不要超过两个，否则会很难读懂。
 
