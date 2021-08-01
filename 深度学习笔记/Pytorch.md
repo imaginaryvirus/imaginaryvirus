@@ -472,3 +472,90 @@ writer.add_graph(demo, input_data)
 writer.close()
 ```
 
+##### 损失函数与反向传播
+
+```
+import torch
+from torch.nn import MSELoss
+
+inputs = torch.tensor([1, 2, 3], dtype=torch.float32)
+outputs = torch.tensor([1, 2, 5], dtype=torch.float32)
+inputs = torch.reshape(inputs, (1, 1, 1, 3))
+outputs = torch.reshape(outputs, (1, 1, 1, 3))
+
+loss_func = MSELoss()
+print(loss_func(inputs, outputs))
+```
+
+对于分类问题常用的损失函数是交叉熵。最小化交叉熵与MLE（最大似然估计）等价。
+
+对输入要求（N,C，*）的格式，N是batch number， C是分类的类别数。对target要求（N）。
+
+```
+import torch
+from torch.nn import CrossEntropyLoss
+
+inputs = torch.tensor([0.1, 0.2, 0.3], dtype=torch.float32)
+target = torch.tensor([1])
+inputs = torch.reshape(inputs, (1, 3))
+
+loss_func = CrossEntropyLoss()
+print(loss_func(inputs, target)) 
+```
+
+##### 优化器
+
+```python
+# 优化器的使用方法
+from torch import nn
+import torch
+from torch.utils.tensorboard import SummaryWriter
+from torchvision import datasets
+from torchvision import transforms
+from torch.utils.data import DataLoader
+
+class CNN(nn.Module):
+    
+    def __init__(self):
+        # CNN model for CIFAR10
+        # input 3,32,32
+        super(CNN, self).__init__()
+        self.model = nn.Sequential(
+            nn.Conv2d(3, 32, 5, padding=2, stride=1),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(32, 32, 5, padding=2, stride=1),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Conv2d(32, 64, 5, padding=2, stride=1),
+            nn.MaxPool2d(kernel_size=2),
+            nn.Flatten(),
+            nn.Linear(1024, 64),
+            nn.Linear(64, 10)
+            )
+    def forward(self, x):
+        x = self.model(x)
+        return x
+
+demo = CNN()
+loss = nn.CrossEntropyLoss()
+# 需要给优化器参数，以及学习率
+optim = torch.optim.SGD(demo.parameters(), lr=0.01)
+trans_totensor = transforms.ToTensor()
+train_set = datasets.CIFAR10(root="D:/pytorch/", transform=trans_totensor)
+train_loader = DataLoader(dataset=train_set, batch_size=64, shuffle=True,
+                          num_workers=0)
+for epoch in range(5):
+    # 每轮都对数据进行学习
+    running_loss = 0.0
+    for data in train_loader:
+        imgs, targets = data
+        outputs = demo(imgs)
+        result_loss = loss(outputs, targets)
+        # 清空上次的梯度结果
+        optim.zero_grad()
+        result_loss.backward()
+        # 对参数做优化
+        optim.step()
+        running_loss += result_loss
+    print(running_loss)
+```
+
