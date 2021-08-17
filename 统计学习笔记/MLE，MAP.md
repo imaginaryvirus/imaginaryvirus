@@ -35,7 +35,7 @@ MAP等于MLE减去**先验概率**的对数值。
 
 N为样本量，<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml17012\wps13.jpg" alt="img" style="zoom: 67%;" />。
 
-所以MLE与交叉熵的优化目标一致。
+当模型为条件概率分布时，MLE与交叉熵的优化目标一致。
 
 ### MLE与最小二乘估计
 

@@ -12,5 +12,7 @@ python   20%|███████████                                  
 
 &#x1F449;[统计学习笔记](https://github.com/imaginaryvirus/imaginaryvirus/tree/main/%E7%BB%9F%E8%AE%A1%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0)
 
+&#x1F449;[Effective Python](https://github.com/imaginaryvirus/imaginaryvirus/tree/main/Effective%20Python)
 
+&#x1F449;[深度学习笔记](https://github.com/imaginaryvirus/imaginaryvirus/tree/main/%E6%B7%B1%E5%BA%A6%E5%AD%A6%E4%B9%A0%E7%AC%94%E8%AE%B0)
 

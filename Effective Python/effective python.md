@@ -332,5 +332,78 @@
 
 31. 谨慎地迭代函数所收到的参数。
 
+    如果函数的参数是一个包含很多对象的列表，这份列表可能要多次迭代。为了应对规模更大的数据，如果用生成器替代这个列表，在第二次迭代时我们无法得到相应的结果，因为**生成器只能迭代一次**。假如生成器已经抛出StopIteration异常，程序不会报错，因为for循环，list构造器以及python标注库中的其他许多函数，都认为迭代器在正常操作过程中抛出StopIteration异常是自然的，无法区分是迭代器本身不包含数据还是虽然有数据现在以及耗尽了。
+
+    可以将迭代器产生的数据复制为列表，这样就能重复迭代，但是数据量太大时，内存会耗尽。并且抵消了用迭代器的好处。一个解决方案是，传入一个名为get_iter的函数，对应一个索取迭代器的函数。每次需要迭代器时通过get_iter函数获取。
+
+    ```python
+    def normalize_func(get_iter):
+    	total = sum(get_iter)
+    	result = []
+    	for value in get_iter:
+    		percent = 100 * value / total
+    		result.append(percent)
+    	return result
+    
+    def read_visitis(path):
+        with open(path, 'r') as f:
+            for line in f:
+                yield int(line)
+    percents = normalize_func(lambda: read_visitis("./data.txt"))
+    ```
+
+    lambda表达式有些生硬。
+
+    **可以新建一种容器类，让它实现迭代协议**。即让自己的类实现`__iter__`方法。
+
+    ```python
+    class ReadVisits:
+    	def __init__(self, path):
+    		self.path = path
+    
+    	def __iter__(self):
+    		with open(path, 'r') as f:
+            	for line in f:
+                	yield int(line)
+             
+    visits = ReadVisits("./data.txt")
+    percents = normalize_func(visits)
+    ```
+
+    在编写函数时可以先确认，参数是容器还是普通的迭代器。按照协议，**如果将普通的迭代器转给内置函数iter()，返回的是迭代器本身。反之如果是容器类型，iter函数返回一个新的迭代器**。
+
+    ```python
+    def normalize_func(numbers):
+    	if iter(numbers) is numbers:
+    		raise TypeError('Must supply a container')
+    	total = sum(get_iter)
+    	result = []
+    	for value in get_iter:
+    		percent = 100 * value / total
+    		result.append(percent)
+    	return result
+    ```
+    
+    或者用isinstance（）和collections.abc的Iterator比较。
+
+32. 考虑用生成器表达式改写数据量比较大的列表推导
+
+    列表推导可以根据输入序列中的每个元素创建一个包含派生元素的新列表。如果读取数据比较大程序可能因为内存耗尽崩溃。
+
+    要想处理大规模数据，可以使用**生成器表达式**，它扩展了列表推导式与生成器机制。
+
+    ```
+    it = (len(x) for x in open('my_file.txt'))
+    print(it)
+    print(next(it))
+    print(next(it))
+    ```
+
+    生成器表达式语法与列表推导式相似，但是写在**圆括号**内。程序返回的是一个迭代器。生成器表达式产生的迭代器可以作为for语句的子表达式出现在另一个生成器表达式内。把生成器表达式组合起来使用能够写出执行速度快且占用内存少的代码。
+
+33. 通过yield from把多个生成器连起来用。
+
+    
+
 
 
