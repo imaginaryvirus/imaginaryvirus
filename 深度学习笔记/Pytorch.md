@@ -1,4 +1,6 @@
-Pytorch
+### Pytorch
+
+参考：https://www.bilibili.com/video/BV1hE411t7RN?p=1
 
 ##### 加载数据
 
@@ -346,7 +348,7 @@ class ReLUDemo(nn.Module):
     
     def __init__(self):
         super(ReLUDemo, self).__init__()
-        # inplace: 是否替换输入
+        # inplace: 是否替换输入，可以节约内存
         self.relu = nn.ReLU()
     
     def forward(self, x):
@@ -402,7 +404,7 @@ w, b以均匀分布初始化。
 
 ![img](https://www.researchgate.net/profile/Yiren-Zhou-6/publication/312170477/figure/fig2/AS:448817725218817@1484017892180/Structure-of-CIFAR10-quick-model.png)
 
-以该模型为例。
+一个常见的CNN分类器，以该模型为例。
 
 ```
 import torch
@@ -555,7 +557,93 @@ for epoch in range(5):
         result_loss.backward()
         # 对参数做优化
         optim.step()
-        running_loss += result_loss
+        running_loss += result_loss.item()
     print(running_loss)
 ```
+
+##### 修改模型
+
+```
+# 修改模型
+import torchvision
+from torch import nn
+# 预训练的VGG16
+vgg16_true = torchvision.models.vgg16(pretrained=True)
+# 没有预训练的VGG16
+vgg16_false = torchvision.models.vgg16(pretrained=False)
+# 预训练的VGG16能够为1000类分类
+print(vgg16_true)
+# 应用到CIFAR10需要修改
+# VGG16的修改
+# 在输出为1000的线性层后面再加上（1000， 10）的线性层使适应于10分类
+vgg16_true.add_module("linear", nn.Linear(1000, 10))
+print(vgg16_true)
+# 或者把最后的线性层修改为（4096， 10）
+vgg16_false.classifier[6] = nn.Linear(4096, 10)
+print(vgg16_false)
+```
+
+##### 模型保存
+
+```
+import torchvision
+import torch
+from torch import nn
+
+vgg16 = torchvision.models.vgg16(pretrained=False)
+# 保存方式1，整个模型
+torch.save(vgg16, "vgg16_method1.pth")
+# 加载模型对应保存方式1的模型
+model = torch.load("./vgg16_method1.pth")
+print(model)
+
+# 保存方式2, 以字典的形式保存参数，官方推荐的方式
+torch.save(vgg16.state_dict(), "vgg16_method2.pth")
+# 加载模型对应保存方式2的模型
+vgg16 = torchvision.models.vgg16(pretrained=False)
+vgg16.load_state_dict(torch.load("vgg16_method2.pth"))
+```
+
+##### 学习率衰减
+
+一般在训练初期设置较大的学习率，使得网络收敛迅速，在后期更小的学习率，有助于网络更好的收敛到最优解。
+
+[pytorch](https://pytorch.org/docs/stable/optim.html)提供了多种动态设置学习率的策略。
+
+通用的使用方式：
+
+```
+schedule = ...
+for epoch in range(100):
+	train...
+	vali....
+	schedule.step()
+```
+
+##### 内存溢出问题
+
+1. 计算loss时直接累加
+
+```
+epoch_loss += cur_loss
+# 会认为epoch_loss也是计算图的一部分，导致占用空间一直变大。
+epoch_loss += cur_loss.item()
+# 使用.item()获取数值部分
+```
+
+2. 部分版本的DataLoader的num_workers大于0，可能导致内存泄露
+
+##### 单机多核训练
+
+1. 知乎：[pytorch模型在multiprocessing下前馈速度明显降低的原因是什么？](https://www.zhihu.com/question/394952301)
+
+   pytorch默认使用多线程并行计算，可能会导致争抢资源，使进程内平均前馈时间是非线性增长。
+
+   ```
+   torch.get_num_threads()  # 查看默认的线程数 
+   torch.set_num_threads(2)  # 设置为每个进程2线程
+   os.environ['OMP_WAIT_POLICY'] = 'PASSIVE'
+   ```
+
+   通过减少进程数以及设置线程的等待策略可以减少前馈耗时。
 
