@@ -2,27 +2,27 @@
 
 ### Logistic分布
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml15008\wps1.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wpsF8E1.tmp.png" alt="img" style="zoom:80%;" />
 
 概率密度函数：
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml15008\wps2.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wps2C17.tmp.png" alt="img" style="zoom:80%;" />
 
 ### 二项Logistics模型
 
 假设**分类的值为{0, 1}**，**每个分类都服从logistic分布**，概率模型。
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml15008\wps10.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wps5CEC.tmp.png" alt="img" style="zoom:80%;" />
 
 由于二者互斥
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml15008\wps11.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wps8A37.tmp.png" alt="img" style="zoom:80%;" />
 
-进一步简化，![img](file:///C:\Users\ainer\AppData\Local\Temp\ksohtml15008\wps5.png)
+进一步简化，<img src="Logistic回归.assets/wpsC07A.tmp.png" alt="img" style="zoom:80%;" />
 
 Odd:一个事件的几率，是指在事件发生的概率与该事件不发生的概率的比值。对于逻辑回归模型，它的对数几率为：
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml24372\wps1.jpg" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wpsFCF8.tmp.jpg" alt="img" style="zoom:80%;" />
 
 在逻辑回归模型中，输入Y=1的对数几率是输入x的线性函数。
 
@@ -30,23 +30,23 @@ Odd:一个事件的几率，是指在事件发生的概率与该事件不发生�
 
 采用最大似然估计：
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml24372\wps2.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wpsFCF8.tmp-16361157908161.jpg" alt="img" style="zoom:80%;" />
 
 对数似然函数：
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml24372\wps3.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wps8C48.tmp.png" alt="img" style="zoom:80%;" />
 
 最大化似然值等价于最小化负似然值，该函数是一个高阶连续可导的凸函数，可以用梯度下降法求解
 
 梯度：
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml24372\wps4.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/wpsAC0.tmp.png" alt="img" style="zoom:80%;" />
 
-写成向量的形式：<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml24372\wps8.jpg" alt="img" style="zoom:67%;" />
+写成向量的形式：<img src="Logistic回归.assets/wps4EBF.tmp.jpg" alt="img" style="zoom:80%;" />
 
 梯度下降：
 
-<img src="file:///C:\Users\ainer\AppData\Local\Temp\ksohtml24372\wps7.png" alt="img" style="zoom:67%;" />
+<img src="Logistic回归.assets/image-20211105203929574.png" alt="image-20211105203929574" style="zoom: 67%;" />
 
 ### python实现
 
