@@ -126,7 +126,7 @@ writer.close()
 ```
 from torchvision import transforms
 # 提供图像处理的工具
-# ToTensor把PIL个数或者numpy.array转换为Tensor格式
+# ToTensor把PIL个数或者numpy.array转换为Tensor格式，会归一化到[0, 1]不适合用于mask图像
 trans_totensor = transforms.ToTensor()
 img_tensor = trans_totensor(image)
 # Tensor数据类型的优点
@@ -647,3 +647,6 @@ epoch_loss += cur_loss.item()
 
    通过减少进程数以及设置线程的等待策略可以减少前馈耗时。
 
+Tensor, tensor的区别
+
+torch.Tensor()是类，返回值类型torch.LongTensor，torch.tensor()是函数，返回值类型torch.FloatTensor。
